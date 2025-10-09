@@ -39,6 +39,10 @@ const SmallCalendar = ({ currentDate }) => {
   const [days, setDays] = useState([]);
 
   useEffect(() => {
+    setDate(currentDate);
+  }, [currentDate]);
+
+  useEffect(() => {
     generateCalendar(date);
   }, [date]);
 

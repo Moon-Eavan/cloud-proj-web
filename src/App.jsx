@@ -18,7 +18,7 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
   const [currentView, setCurrentView] = useState('month');
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1));
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const renderView = () => {
     switch (currentView) {
