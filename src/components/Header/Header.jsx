@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 const HeaderContainer = styled.header`
@@ -18,15 +18,17 @@ const LeftSection = styled.div`
 
 const TodayButton = styled.button`
   padding: 8px 16px;
-  border: 1px solid #dadce0;
+  border: 1px solid #0C41FF;
   border-radius: 4px;
   background-color: #fff;
-  color: #3c4043;
+  color: #0C41FF;
   font-size: 14px;
   cursor: pointer;
+  height: 35px;
+  font-weight: 500;
 
   &:hover {
-    background-color: #f1f3f4;
+    background-color: #e8f0fe;
   }
 `;
 
@@ -59,39 +61,83 @@ const RightSection = styled.div`
   align-items: center;
 `;
 
-const ViewButtons = styled.div`
+const ViewSelectorContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const ViewSelectorButton = styled.button`
+  background-color: #fff;
+  border: 1px solid #0C41FF;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
   display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #0C41FF;
+  height: 35px;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #e8f0fe;
+  }
+`;
+
+const DropdownArrow = styled.span`
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #0C41FF;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
   border: 1px solid #dadce0;
   border-radius: 4px;
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 100;
+  width: 120px;
+  margin-top: 4px;
+`;
 
-  button {
-    background-color: #fff;
-    border: none;
-    border-left: 1px solid #dadce0;
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #3c4043;
+const DropdownItem = styled.div`
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
 
-    &:first-child {
-      border-left: none;
-    }
+  &:hover {
+    background-color: #f1f3f4;
+  }
 
-    &.active {
-      background-color: #e8f0fe;
-      color: #1967d2;
-    }
-
-    &:hover:not(.active) {
-      background-color: #f1f3f4;
-    }
+  &.active {
+    background-color: #e8f0fe;
+    color: #1967d2;
   }
 `;
 
 
 const Header = ({ currentView, setCurrentView, currentDate, setCurrentDate }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const formattedDate = `${currentDate.getFullYear()} ${currentDate.toLocaleString('en-US', { month: 'long' })}`;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   const handlePrev = () => {
     const newDate = new Date(currentDate);
@@ -125,6 +171,13 @@ const Header = ({ currentView, setCurrentView, currentDate, setCurrentDate }) =>
     setCurrentDate(new Date());
   };
 
+  const handleViewChange = (view) => {
+    setCurrentView(view);
+    setDropdownOpen(false);
+  };
+
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
   return (
     <HeaderContainer>
       <LeftSection>
@@ -134,14 +187,22 @@ const Header = ({ currentView, setCurrentView, currentDate, setCurrentDate }) =>
           <ArrowButton onClick={handleNext}>&gt;</ArrowButton>
         </NavArrows>
         <DateDisplay>{formattedDate}</DateDisplay>
+        <ViewSelectorContainer ref={dropdownRef}>
+          <ViewSelectorButton onClick={() => setDropdownOpen(!isDropdownOpen)}>
+            <span>{capitalize(currentView)}</span>
+            <DropdownArrow />
+          </ViewSelectorButton>
+          {isDropdownOpen && (
+            <DropdownMenu>
+              <DropdownItem className={currentView === 'day' ? 'active' : ''} onClick={() => handleViewChange('day')}>Day</DropdownItem>
+              <DropdownItem className={currentView === 'week' ? 'active' : ''} onClick={() => handleViewChange('week')}>Week</DropdownItem>
+              <DropdownItem className={currentView === 'month' ? 'active' : ''} onClick={() => handleViewChange('month')}>Month</DropdownItem>
+              <DropdownItem className={currentView === 'year' ? 'active' : ''} onClick={() => handleViewChange('year')}>Year</DropdownItem>
+            </DropdownMenu>
+          )}
+        </ViewSelectorContainer>
       </LeftSection>
       <RightSection>
-        <ViewButtons>
-          <button className={currentView === 'day' ? 'active' : ''} onClick={() => setCurrentView('day')}>Day</button>
-          <button className={currentView === 'week' ? 'active' : ''} onClick={() => setCurrentView('week')}>Week</button>
-          <button className={currentView === 'month' ? 'active' : ''} onClick={() => setCurrentView('month')}>Month</button>
-          <button className={currentView === 'year' ? 'active' : ''} onClick={() => setCurrentView('year')}>Year</button>
-        </ViewButtons>
       </RightSection>
     </HeaderContainer>
   );
