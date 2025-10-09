@@ -5,31 +5,49 @@ const DayViewContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-left: 1px solid #dadce0;
+`;
+
+const DayHeader = styled.div`
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  border-bottom: 1px solid #dadce0;
+  text-align: center;
+  padding: 10px 0;
 `;
 
 const TimeGrid = styled.div`
   display: grid;
+  grid-template-columns: 50px 1fr;
   grid-template-rows: repeat(24, 60px);
   flex-grow: 1;
+  border-left: 1px solid #dadce0;
+`;
+
+const TimeLabelCell = styled.div`
   position: relative;
+  grid-column: 1;
+  grid-row: ${props => props.hour + 1} / span 1;
+  border-right: 1px solid #dadce0;
 `;
 
 const TimeLabel = styled.div`
   position: absolute;
-  left: -50px;
-  top: ${props => props.hour * 60}px;
-  transform: translateY(-50%);
+  right: 8px;
+  top: -8px;
   font-size: 10px;
   color: #70757a;
-  width: 40px;
-  text-align: right;
+`;
+
+const DayColumn = styled.div`
+  grid-column: 2;
+  grid-row: 1 / span 24;
+  position: relative;
 `;
 
 const HourLine = styled.div`
   border-bottom: 1px solid #e0e0e0;
-  grid-row: ${props => props.hour + 1};
-  grid-column: 1;
+  height: 60px;
+  box-sizing: border-box;
 `;
 
 const Event = styled.div`
@@ -59,18 +77,24 @@ const DayView = ({ currentDate }) => {
 
   return (
     <DayViewContainer>
+      <DayHeader>
+        <div /> {/* Spacer for time labels */}
+        <div>{currentDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div>
+      </DayHeader>
       <TimeGrid>
         {hours.map(hour => (
-          <React.Fragment key={hour}>
-            <TimeLabel hour={hour}>{hour === 0 ? '' : `${hour}:00`}</TimeLabel>
-            <HourLine hour={hour} />
-          </React.Fragment>
+          <TimeLabelCell key={hour} hour={hour}>
+            {hour > 0 && <TimeLabel>{hour}:00</TimeLabel>}
+          </TimeLabelCell>
         ))}
-        {events.map(event => (
-          <Event key={event.id} start={event.start} duration={event.duration} color={event.color}>
-            {event.title}
-          </Event>
-        ))}
+        <DayColumn>
+            {hours.map(hour => <HourLine key={hour} />)}
+            {events.map(event => (
+              <Event key={event.id} start={event.start} duration={event.duration} color={event.color}>
+                {event.title}
+              </Event>
+            ))}
+        </DayColumn>
       </TimeGrid>
     </DayViewContainer>
   );
